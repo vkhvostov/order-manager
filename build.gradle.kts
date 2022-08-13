@@ -40,6 +40,8 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.4.1")
     implementation("org.flywaydb:flyway-core:9.1.3")
+    // Convenient way to handle database connections
+    implementation ("com.zaxxer:HikariCP:5.0.1")
 
     testImplementation(kotlin("test"))
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
