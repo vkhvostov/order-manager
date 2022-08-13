@@ -90,6 +90,13 @@ object OrderRepository {
         return 0
     }
 
+    fun updateStatus(orderId: Int, status: OrderStatus) {
+        val connection = dataSource.connection
+
+        val query = connection.prepareStatement("UPDATE orders SET status = '$status' where id = $orderId;")
+        query.executeUpdate()
+    }
+
 //    fun delete(orderId: String): Boolean {
 //        val connection = dataSource.connection
 //

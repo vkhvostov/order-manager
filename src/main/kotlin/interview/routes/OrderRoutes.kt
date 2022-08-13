@@ -1,7 +1,7 @@
 package interview.routes
 
 import interview.models.*
-import interview.service.OrderService
+import interview.services.OrderService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*

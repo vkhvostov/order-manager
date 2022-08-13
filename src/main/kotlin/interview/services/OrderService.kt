@@ -1,4 +1,4 @@
-package interview.service
+package interview.services
 
 import interview.models.Order
 import interview.models.OrderStatus
@@ -7,6 +7,7 @@ import interview.routes.OrderCreationRequest
 
 object OrderService {
 
+    // TODO: validate orderID
     fun find(orderId: String): Order? {
         return OrderRepository.find(orderId.toInt())
     }
@@ -18,5 +19,11 @@ object OrderService {
     fun create(orderCreationRequest: OrderCreationRequest) {
         val order = Order(positions = orderCreationRequest.positions, status = OrderStatus.CREATED)
         OrderRepository.save(order)
+    }
+
+    // TODO: proper return value
+    // TODO: validate orderID
+    fun updateOrderStatus(orderId: String, orderStatus: OrderStatus) {
+        OrderRepository.updateStatus(orderId.toInt(), orderStatus)
     }
 }
