@@ -27,6 +27,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
 //    implementation("io.ktor:ktor-html-builder:1.6.8")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
 

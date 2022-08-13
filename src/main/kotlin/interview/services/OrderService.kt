@@ -1,10 +1,12 @@
 package interview.services
 
+import interview.clients.FulfillmentProviderClient
 import interview.models.Order
 import interview.models.OrderStatus
 import interview.persistence.OrderRepository
 import interview.routes.OrderCreationRequest
 
+// TODO: naming: maybe order processor?
 object OrderService {
 
     // TODO: validate orderID
@@ -24,6 +26,16 @@ object OrderService {
     // TODO: proper return value
     // TODO: validate orderID
     fun updateOrderStatus(orderId: String, orderStatus: OrderStatus) {
-        OrderRepository.updateStatus(orderId.toInt(), orderStatus)
+        updateOrderStatus(orderId.toInt(), orderStatus)
+    }
+
+    fun updateOrderStatus(orderId: Int?, orderStatus: OrderStatus) {
+        if (orderId != null) {
+            OrderRepository.updateStatus(orderId, orderStatus)
+        }
+    }
+
+    fun processOrder(orderId: String) {
+        FulfillmentProviderClient.sendFulfillmentRequest(orderId.toInt())
     }
 }
