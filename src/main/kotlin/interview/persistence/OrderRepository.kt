@@ -1,14 +1,39 @@
 package interview.persistence
 
+import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.some
+import interview.PersistenceError
 import interview.models.Order
 import interview.models.OrderPosition
 import interview.models.OrderStatus
+import org.slf4j.LoggerFactory
 
 object OrderRepository {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     private val dataSource = PostgresDataSource.dataSource
 
-    fun find(orderId: Int): Order? {
+    fun find(orderId: Int): Either<PersistenceError, Option<Order>> =
+        Either.catch { read(orderId) }
+            .mapLeft { PersistenceError("Error during searching for an order $orderId in the database", it) }
+
+    fun findAll(): Either<PersistenceError, List<Order>> =
+        Either.catch { readAll() }
+            .mapLeft { PersistenceError("Error during searching for all orders in the database", it) }
+
+    fun save(order: Order): Either<PersistenceError, Int> =
+        Either.catch { store(order) }
+            .mapLeft { PersistenceError("Error during saving order $order to the database", it) }
+
+    fun updateStatus(orderId: Int, status: OrderStatus): Either<PersistenceError, Int> =
+        Either.catch { update(orderId, status) }
+            .mapLeft { PersistenceError("Error during updating order $orderId with status $status", it) }
+
+    private fun read(orderId: Int): Option<Order> {
+        logger.debug("Searching for an order with ID $orderId")
         val connection = dataSource.connection
 
         val query = connection.prepareStatement("""
@@ -20,23 +45,24 @@ object OrderRepository {
         """.trimIndent())
         val result = query.executeQuery()
 
-        // TODO: Implement the case when no order is found
         val rows = mutableListOf<OrderPositionRowProjection>()
 
         while (result.next()) {
-            // TODO: handle invalid statuses
             val status = result.getString("status")
             val positionId = result.getInt("position_id")
             val articleId = result.getString("article_id")
             val articleAmount = result.getInt("amount")
 
-            rows.add(OrderPositionRowProjection(orderId, OrderStatus.valueOf(status), positionId, articleId, articleAmount))
+            val orderStatus = OrderStatus.fromString(status)
+            orderStatus.map { rows.add(OrderPositionRowProjection(orderId, it, positionId, articleId, articleAmount)) }
+            if (orderStatus.isEmpty()) logger.warn("Ignoring order $orderId due to invalid status $status")
         }
 
-        return toOrders(rows).first()
+        return if (rows.isEmpty()) None else toOrders(rows).first().some()
     }
 
-    fun findAll(): List<Order> {
+    private fun readAll(): List<Order> {
+        logger.debug("Searching for all orders")
         val connection = dataSource.connection
 
         val query = connection.prepareStatement("""
@@ -51,66 +77,56 @@ object OrderRepository {
 
         while (result.next()) {
             val orderId = result.getInt("order_id")
-            // TODO: handle invalid statuses
             val status = result.getString("status")
             val positionId = result.getInt("position_id")
             val articleId = result.getString("article_id")
             val articleAmount = result.getInt("amount")
 
-            rows.add(OrderPositionRowProjection(orderId, OrderStatus.valueOf(status), positionId, articleId, articleAmount))
+            val orderStatus = OrderStatus.fromString(status)
+            orderStatus.map { rows.add(OrderPositionRowProjection(orderId, it, positionId, articleId, articleAmount)) }
+            if (orderStatus.isEmpty()) logger.warn("Ignoring order $orderId due to invalid status $status")
         }
 
         return toOrders(rows)
     }
 
-    fun save(order: Order): Int {
+    private fun store(order: Order): Int {
+        logger.debug("Storing order $order in the database")
         val connection = dataSource.connection
 
         val orderQuery = connection.prepareStatement(
             "INSERT INTO orders (status) VALUES ('${order.status}') RETURNING id;"
         )
-        val orderId = orderQuery.executeQuery()
-        orderId.next()
+        val orderQueryResult = orderQuery.executeQuery()
+        orderQueryResult.next()
+        val orderId = orderQueryResult.getInt("id")
 
         order.positions.forEach { position ->
             val positionQuery = connection.prepareStatement(
                 "INSERT INTO positions (article_id, amount) VALUES ('${position.articleId}', ${position.amount}) RETURNING id;"
             )
-            val positionId = positionQuery.executeQuery()
-            positionId.next()
+            val positionQueryResult = positionQuery.executeQuery()
+            positionQueryResult.next()
+            val positionId = positionQueryResult.getInt("id")
 
             val orderToPositionQuery = connection.prepareStatement(
-                "INSERT INTO order_to_position (order_id, position_id) VALUES (${orderId.getInt("id")}, ${positionId.getInt("id")});"
+                "INSERT INTO order_to_position (order_id, position_id) VALUES ($orderId, $positionId);"
             )
 
             orderToPositionQuery.executeUpdate()
         }
 
-        // TODO: Finish
-        return 0
+        return orderId
     }
 
-    fun updateStatus(orderId: Int, status: OrderStatus) {
+    private fun update(orderId: Int, status: OrderStatus): Int {
+        logger.debug("Updating for the order $orderId status to $status")
         val connection = dataSource.connection
 
         val query = connection.prepareStatement("UPDATE orders SET status = '$status' where id = $orderId;")
-        query.executeUpdate()
-    }
 
-//    fun delete(orderId: String): Boolean {
-//        val connection = dataSource.connection
-//
-//        val query = connection.prepareStatement(
-//            "DELETE FROM orders WHERE id = $orderId"
-//        )
-//
-//        val result = query.executeUpdate()
-//
-//        println(result)
-//
-//        // TODO: Finish
-//        return true
-//    }
+        return query.executeUpdate()
+    }
 
     private fun toOrders(rowProjections: List<OrderPositionRowProjection>): List<Order> =
         rowProjections.groupBy { it.orderId to it.orderStatus }

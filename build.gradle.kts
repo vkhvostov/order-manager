@@ -56,6 +56,7 @@ tasks.withType<KotlinCompile> {
         apiVersion = "1.6"
         languageVersion = "1.6"
         freeCompilerArgs = freeCompilerArgs + listOf("-Xjsr305=strict")
+        freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
     }
 }
 
