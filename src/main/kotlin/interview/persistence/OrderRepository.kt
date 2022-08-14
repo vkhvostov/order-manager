@@ -8,6 +8,7 @@ import interview.PersistenceError
 import interview.models.Order
 import interview.models.OrderPosition
 import interview.models.OrderStatus
+import java.sql.ResultSet
 import org.slf4j.LoggerFactory
 
 object OrderRepository {
@@ -20,15 +21,15 @@ object OrderRepository {
         Either.catch { read(orderId) }
             .mapLeft { PersistenceError("Error during searching for an order $orderId in the database", it) }
 
-    fun findAll(): Either<PersistenceError, List<Order>> =
-        Either.catch { readAll() }
+    fun findAll(status: OrderStatus? = null): Either<PersistenceError, List<Order>> =
+        Either.catch { readAll(status) }
             .mapLeft { PersistenceError("Error during searching for all orders in the database", it) }
 
     fun save(order: Order): Either<PersistenceError, Int> =
         Either.catch { store(order) }
             .mapLeft { PersistenceError("Error during saving order $order to the database", it) }
 
-    fun updateStatus(orderId: Int, status: OrderStatus): Either<PersistenceError, Int> =
+    fun updateStatus(orderId: Int, status: OrderStatus): Either<PersistenceError, Unit> =
         Either.catch { update(orderId, status) }
             .mapLeft { PersistenceError("Error during updating order $orderId with status $status", it) }
 
@@ -43,51 +44,30 @@ object OrderRepository {
                 JOIN positions p on p.id = otp.position_id
             WHERE o.id = $orderId;
         """.trimIndent())
+
         val result = query.executeQuery()
+        val orders = toOrders(result)
 
-        val rows = mutableListOf<OrderPositionRowProjection>()
-
-        while (result.next()) {
-            val status = result.getString("status")
-            val positionId = result.getInt("position_id")
-            val articleId = result.getString("article_id")
-            val articleAmount = result.getInt("amount")
-
-            val orderStatus = OrderStatus.fromString(status)
-            orderStatus.map { rows.add(OrderPositionRowProjection(orderId, it, positionId, articleId, articleAmount)) }
-            if (orderStatus.isEmpty()) logger.warn("Ignoring order $orderId due to invalid status $status")
-        }
-
-        return if (rows.isEmpty()) None else toOrders(rows).first().some()
+        return if (orders.isEmpty()) None else orders.first().some()
     }
 
-    private fun readAll(): List<Order> {
+    private fun readAll(status: OrderStatus? = null): List<Order> {
         logger.debug("Searching for all orders")
         val connection = dataSource.connection
+
+        val statusWhereClause = if (status != null) "WHERE o.status = '$status'" else ""
 
         val query = connection.prepareStatement("""
             SELECT o.id as order_id, o.status as status, p.id as position_id, p.article_id as article_id, p.amount as amount 
             FROM orders o 
                 JOIN order_to_position otp on o.id = otp.order_id
-                JOIN positions p on p.id = otp.position_id;
+                JOIN positions p on p.id = otp.position_id 
+            $statusWhereClause;
         """.trimIndent())
 
         val result = query.executeQuery()
-        val rows = mutableListOf<OrderPositionRowProjection>()
 
-        while (result.next()) {
-            val orderId = result.getInt("order_id")
-            val status = result.getString("status")
-            val positionId = result.getInt("position_id")
-            val articleId = result.getString("article_id")
-            val articleAmount = result.getInt("amount")
-
-            val orderStatus = OrderStatus.fromString(status)
-            orderStatus.map { rows.add(OrderPositionRowProjection(orderId, it, positionId, articleId, articleAmount)) }
-            if (orderStatus.isEmpty()) logger.warn("Ignoring order $orderId due to invalid status $status")
-        }
-
-        return toOrders(rows)
+        return toOrders(result)
     }
 
     private fun store(order: Order): Int {
@@ -119,13 +99,31 @@ object OrderRepository {
         return orderId
     }
 
-    private fun update(orderId: Int, status: OrderStatus): Int {
+    private fun update(orderId: Int, status: OrderStatus): Unit {
         logger.debug("Updating for the order $orderId status to $status")
         val connection = dataSource.connection
 
         val query = connection.prepareStatement("UPDATE orders SET status = '$status' where id = $orderId;")
 
-        return query.executeUpdate()
+        query.executeUpdate()
+    }
+
+    private fun toOrders(result: ResultSet): List<Order> {
+        val rows = mutableListOf<OrderPositionRowProjection>()
+
+        while (result.next()) {
+            val orderId = result.getInt("order_id")
+            val status = result.getString("status")
+            val positionId = result.getInt("position_id")
+            val articleId = result.getString("article_id")
+            val articleAmount = result.getInt("amount")
+
+            val orderStatus = OrderStatus.fromString(status)
+            orderStatus.map { rows.add(OrderPositionRowProjection(orderId, it, positionId, articleId, articleAmount)) }
+            if (orderStatus.isEmpty()) logger.warn("Ignoring order $orderId due to invalid status $status")
+        }
+
+        return toOrders(rows)
     }
 
     private fun toOrders(rowProjections: List<OrderPositionRowProjection>): List<Order> =

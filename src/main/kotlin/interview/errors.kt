@@ -13,6 +13,8 @@ data class PersistenceError(val description: String, val error: Throwable) : Ord
 
 data class ValidationError(val description: String) : OrderManagementError
 
+data class FulfillmentError(val description: String, val error: Throwable) : OrderManagementError
+
 context(PipelineContext<Unit, ApplicationCall>)
 
 suspend inline fun <reified A : Any> Either<OrderManagementError, A>.respond(status: HttpStatusCode): Unit =
@@ -25,6 +27,7 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respond(error: OrderManagemen
     when (error) {
         is PersistenceError -> internal(error)
         is ValidationError -> unprocessable(error)
+        is FulfillmentError -> failedDependency(error)
     }
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.unprocessable(error: OrderManagementError): Unit =
@@ -32,3 +35,6 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.unprocessable(
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.internal(error: OrderManagementError): Unit =
     call.respond(HttpStatusCode.InternalServerError, error)
+
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.failedDependency(error: OrderManagementError): Unit =
+    call.respond(HttpStatusCode.FailedDependency, error)

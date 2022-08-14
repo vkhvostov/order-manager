@@ -1,35 +1,37 @@
 package interview.routes
 
-import interview.models.*
+import interview.models.OrderPosition
 import interview.respond
 import interview.services.OrderService
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.Created
+import io.ktor.http.HttpStatusCode.Companion.NotFound
+import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.server.application.call
+import io.ktor.server.request.receive
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
+import io.ktor.server.routing.route
 import kotlinx.serialization.Serializable
 
 fun Route.orderRouting() {
     route("/order") {
         get {
             val orders = OrderService.findAll()
-            if (orders.isNotEmpty()) {
-                orders.respond(HttpStatusCode.OK)
-            } else {
-                call.respondText("No orders found", status = HttpStatusCode.OK)
-            }
+            orders.respond(OK)
         }
         get("{id?}") {
-            val id = call.parameters["id"] ?: return@get call.respondText(text = "Missing id", status = HttpStatusCode.BadRequest)
+            val id = call.parameters["id"] ?: return@get call.respondText(text = "Missing id", status = BadRequest)
             val order = OrderService.find(id)
-            order.tap { if (it.isEmpty()) return@get call.respondText(text = "No order with id $id", status = HttpStatusCode.NotFound) }
-            order.respond(HttpStatusCode.OK)
+            order.tap { if (it.isEmpty()) return@get call.respondText(text = "No order with id $id", status = NotFound) }
+            order.respond(OK)
         }
         put {
             val order = call.receive<OrderCreationRequest>()
             val orderId = OrderService.create(order)
-            orderId.respond(HttpStatusCode.Created)
+            orderId.respond(Created)
         }
     }
 }

@@ -1,7 +1,7 @@
 package interview.routes
 
-import interview.models.OrderStatus.PAID
-import interview.models.PaymentConfirmation
+import interview.models.FulfillmentConfirmation
+import interview.models.OrderStatus.CLOSED
 import interview.respond
 import interview.services.OrderService
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -11,12 +11,12 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 
-fun Route.paymentConfirmationRouting() {
-    route("/payment-confirmation") {
+fun Route.fulfillmentConfirmationRouting() {
+    route("/fulfillment-confirmation") {
         put {
-            val paymentConfirmation = call.receive<PaymentConfirmation>()
+            val paymentConfirmation = call.receive<FulfillmentConfirmation>()
             val orderId = paymentConfirmation.orderId
-            OrderService.updateOrderStatus(orderId, PAID).respond(OK)
+            OrderService.updateOrderStatus(orderId, CLOSED).respond(OK)
         }
     }
 }
