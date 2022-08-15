@@ -1,8 +1,8 @@
 package interview
 
+import interview.Configuration.orderService
 import interview.plugins.configureRouting
 import interview.plugins.configureSerialization
-import interview.services.OrderService
 import io.ktor.server.application.Application
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,17 +17,27 @@ fun Application.module() {
 }
 
 fun Application.main() {
+    val appConfig = environment.config.config("ktor.properties")
+    val orderProcessingInitialDelay = Duration.parse(appConfig.property("order-service.initial-delay").getString())
+    val orderProcessingFixedDelay = Duration.parse(appConfig.property("order-service.fixed-delay").getString())
+
+    Configuration.initialize(appConfig)
+
     val logger = LoggerFactory.getLogger(javaClass)
-    val orderService = Context.orderService
+
+    fun triggerPaidOrdersProcessing() {
+        logger.debug("Starting processing of PAID orders")
+        val processingResult = orderService.processPaidOrders()
+        processingResult.tapLeft {
+            logger.warn("Following errors occurred during processing PAID orders\n ${it.joinToString("\n")}")
+        }
+    }
+
     launch {
         while (true) {
-            // TODO: consider moving this somewhere else
-            logger.debug("Starting processing of PAID orders")
-            val processingResult = orderService.processPaidOrders()
-            processingResult.tapLeft {
-                logger.warn("Following errors occurred during processing PAID orders\n ${it.joinToString("\n")}")
-            }
-            delay(Duration.parse("PT2M"))
+            delay(orderProcessingInitialDelay)
+            triggerPaidOrdersProcessing()
+            delay(orderProcessingFixedDelay)
         }
     }
 }
