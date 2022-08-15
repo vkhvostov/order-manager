@@ -11,7 +11,7 @@ import interview.models.OrderStatus
 import java.sql.ResultSet
 import org.slf4j.LoggerFactory
 
-object OrderRepository {
+class OrderRepository {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 

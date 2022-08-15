@@ -1,8 +1,8 @@
 package interview.routes
 
+import interview.Context.orderService
 import interview.models.OrderPosition
 import interview.respond
-import interview.services.OrderService
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NotFound
@@ -19,18 +19,18 @@ import kotlinx.serialization.Serializable
 fun Route.orderRouting() {
     route("/order") {
         get {
-            val orders = OrderService.findAll()
+            val orders = orderService.findAll()
             orders.respond(OK)
         }
         get("{id?}") {
-            val id = call.parameters["id"] ?: return@get call.respondText(text = "Missing id", status = BadRequest)
-            val order = OrderService.find(id)
+            val id = call.parameters["id"] ?: return@get call.respondText(text = "Missing id", status = BadRequest) // TODO: Unify them with text vs without text?
+            val order = orderService.find(id)
             order.tap { if (it.isEmpty()) return@get call.respondText(text = "No order with id $id", status = NotFound) }
             order.respond(OK)
         }
         put {
             val order = call.receive<OrderCreationRequest>()
-            val orderId = OrderService.create(order)
+            val orderId = orderService.create(order)
             orderId.respond(Created)
         }
     }

@@ -14,27 +14,31 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
-object FulfillmentProviderClient {
+class FulfillmentProviderClient(
+    private val httpTimeout: Long,
+    private val httpMaxRetries: Int,
+    private val fulfillmentProviderBaseUrl: String,
+) {
 
-    // TODO: proper configuration and taking value from there
-    private const val fiveMinutes: Long = 5 * 1000 * 60
+    private val fulfillmentRequestUrl = "/fulfillment-request"
 
     private val client = HttpClient(CIO) {
         install(HttpTimeout) {
             HttpTimeoutCapabilityConfiguration(
-                requestTimeoutMillis = fiveMinutes,
-                connectTimeoutMillis = fiveMinutes,
-                socketTimeoutMillis = fiveMinutes
+                requestTimeoutMillis = httpTimeout,
+                connectTimeoutMillis = httpTimeout,
+                socketTimeoutMillis = httpTimeout
             )
         }
         install(HttpRequestRetry) {
             exponentialDelay()
-            maxRetries = 5
+            maxRetries = httpMaxRetries
         }
     }
 
     /**
-     * Assuming that fulfillment provider can reject double fulfillment requests based on order ID
+     * Assuming that fulfillment provider can reject double fulfillment requests based on order ID,
+     * so it is not required to validate that before sending order for fulfillment
      */
     suspend fun sendFulfillmentRequest(orderId: Int): Either<OrderManagementError, Boolean> {
         return Either.catch { sendRequest(orderId) }
@@ -42,10 +46,9 @@ object FulfillmentProviderClient {
     }
 
     private suspend fun sendRequest(orderId: Int): Boolean {
-        // TODO: Move to settings
-        val response = client.post("http://127.0.0.1:8080/fulfillment-request") {
+        val response = client.post("$fulfillmentProviderBaseUrl$fulfillmentRequestUrl") {
             contentType(ContentType.Application.Json)
-            setBody("{ \"orderId\": $orderId }") // TODO: part the object
+            setBody("{ \"orderId\": $orderId }") // TODO: serialize the object
         }
 
         return when (response.status) {

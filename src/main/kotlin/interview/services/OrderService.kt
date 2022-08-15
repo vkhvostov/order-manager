@@ -14,19 +14,19 @@ import interview.models.OrderStatus.IN_FULFILLMENT
 import interview.models.OrderStatus.PAID
 import interview.persistence.OrderRepository
 import interview.routes.OrderCreationRequest
-import java.util.concurrent.Executors
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 // TODO: naming: maybe order processor?
-object OrderService {
-
+class OrderService(
+    private val fulfillmentProviderClient: FulfillmentProviderClient,
+    private val orderRepository: OrderRepository,
+    private val coroutineDispatcher: ExecutorCoroutineDispatcher,
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    private val coroutineDispatcher = Executors.newFixedThreadPool(5).asCoroutineDispatcher()
 
     // TODO: check if this can be simplified
     /**
@@ -41,7 +41,7 @@ object OrderService {
             runBlocking(coroutineDispatcher) {
                 orders.filter { it.id != null }.map { order ->
                     async {
-                        FulfillmentProviderClient.sendFulfillmentRequest(order.id!!)
+                        fulfillmentProviderClient.sendFulfillmentRequest(order.id!!)
                             .flatMap { updateOrderStatus(order.id, IN_FULFILLMENT) }
                     }
                 }.awaitAll()
@@ -51,16 +51,16 @@ object OrderService {
     fun find(orderId: String): Either<OrderManagementError, Option<Order>> {
         return Either.catch { orderId.toInt() }
             .mapLeft { ValidationError("Order ID is not an integer") }
-            .flatMap { OrderRepository.find(it) }
+            .flatMap { orderRepository.find(it) }
     }
 
     fun findAll(status: OrderStatus? = null): Either<OrderManagementError, List<Order>> {
-        return OrderRepository.findAll(status)
+        return orderRepository.findAll(status)
     }
 
     fun create(orderCreationRequest: OrderCreationRequest): Either<OrderManagementError, Int> {
         val order = Order(positions = orderCreationRequest.positions, status = OrderStatus.CREATED)
-        return OrderRepository.save(order)
+        return orderRepository.save(order)
     }
 
     fun updateOrderStatus(orderId: String, orderStatus: OrderStatus): Either<OrderManagementError, Unit> {
@@ -72,7 +72,7 @@ object OrderService {
     private fun updateOrderStatus(orderId: Int?, orderStatus: OrderStatus): Either<OrderManagementError, Unit> {
         return if (orderId != null) {
             logger.info("Updating order $orderId to status $orderStatus")
-            OrderRepository.updateStatus(orderId, orderStatus)
+            orderRepository.updateStatus(orderId, orderStatus)
         } else {
             logger.warn("Updating is not possible due to the null order ID")
             ValidationError("Order ID is null").left()

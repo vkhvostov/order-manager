@@ -18,13 +18,14 @@ fun Application.module() {
 
 fun Application.main() {
     val logger = LoggerFactory.getLogger(javaClass)
+    val orderService = Context.orderService
     launch {
         while (true) {
             // TODO: consider moving this somewhere else
             logger.debug("Starting processing of PAID orders")
-            val processingResult = OrderService.processPaidOrders()
+            val processingResult = orderService.processPaidOrders()
             processingResult.tapLeft {
-                logger.warn("Following errors occurred during processing PAIR orders\n ${it.joinToString("\n")}")
+                logger.warn("Following errors occurred during processing PAID orders\n ${it.joinToString("\n")}")
             }
             delay(Duration.parse("PT2M"))
         }
