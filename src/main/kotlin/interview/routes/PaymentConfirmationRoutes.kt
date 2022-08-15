@@ -14,6 +14,7 @@ import io.ktor.server.routing.route
 fun Route.paymentConfirmationRouting() {
     route("/payment-confirmation") {
         put {
+            // TODO: maybe catch here to catch parsing exception of type JsonDecodingException
             val paymentConfirmation = call.receive<PaymentConfirmation>()
             val orderId = paymentConfirmation.orderId
             orderService.updateOrderStatus(orderId, PAID).respond(OK)

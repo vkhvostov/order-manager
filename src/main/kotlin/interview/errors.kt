@@ -7,13 +7,15 @@ import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.util.pipeline.PipelineContext
 
-sealed interface OrderManagementError
+sealed interface OrderManagementError {
+    val description: String
+}
 
-data class PersistenceError(val description: String, val error: Throwable) : OrderManagementError
+data class PersistenceError(override val description: String, val error: Throwable) : OrderManagementError
 
-data class ValidationError(val description: String) : OrderManagementError
+data class ValidationError(override val description: String) : OrderManagementError
 
-data class FulfillmentError(val description: String, val error: Throwable) : OrderManagementError
+data class FulfillmentError(override val description: String, val error: Throwable) : OrderManagementError
 
 context(PipelineContext<Unit, ApplicationCall>)
 
@@ -31,10 +33,10 @@ suspend fun PipelineContext<Unit, ApplicationCall>.respond(error: OrderManagemen
     }
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.unprocessable(error: OrderManagementError): Unit =
-    call.respond(HttpStatusCode.UnprocessableEntity, error)
+    call.respond(HttpStatusCode.UnprocessableEntity, error.description)
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.internal(error: OrderManagementError): Unit =
-    call.respond(HttpStatusCode.InternalServerError, error)
+    call.respond(HttpStatusCode.InternalServerError, error.description)
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.failedDependency(error: OrderManagementError): Unit =
-    call.respond(HttpStatusCode.FailedDependency, error)
+    call.respond(HttpStatusCode.FailedDependency, error.description)
