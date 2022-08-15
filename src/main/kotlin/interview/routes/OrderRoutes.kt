@@ -1,6 +1,6 @@
 package interview.routes
 
-import interview.Configuration.orderService
+import interview.configuration.Configuration.orderService
 import interview.models.OrderPosition
 import interview.respond
 import io.ktor.http.HttpStatusCode.Companion.BadRequest

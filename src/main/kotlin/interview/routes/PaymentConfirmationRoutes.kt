@@ -1,6 +1,6 @@
 package interview.routes
 
-import interview.Configuration.orderService
+import interview.configuration.Configuration.orderService
 import interview.models.OrderStatus.PAID
 import interview.models.PaymentConfirmation
 import interview.respond

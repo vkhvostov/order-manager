@@ -15,10 +15,9 @@ group = "interview"
 version = "1.0-SNAPSHOT"
 
 val ktorVersion: String by project
-val exposedVersion: String by project
+val arrowVersion: String by project
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -28,24 +27,18 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
-//    implementation("io.ktor:ktor-html-builder:1.6.8")
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.8.0")
 
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-
-    implementation("io.arrow-kt:arrow-core:1.1.2")
+    implementation("io.arrow-kt:arrow-core:$arrowVersion")
 
     implementation("ch.qos.logback:logback-classic:1.2.11")
 
     implementation("org.postgresql:postgresql:42.4.1")
     implementation("org.flywaydb:flyway-core:9.1.3")
-    // Convenient way to handle database connections
     implementation ("com.zaxxer:HikariCP:5.0.1")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation("io.mockk:mockk:1.12.5")
+    testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("io.kotest:kotest-assertions-core:5.4.1")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:1.2.5")
 }
@@ -101,6 +94,7 @@ application {
     mainClass.set("ApplicationKt")
 }
 
+// TODO: get values from the environment variables
 flyway {
     url = "jdbc:postgresql://localhost:5432/order_manager_db" /*System.getenv("DB_URL")*/
     user = "postgres" /*System.getenv("DB_USER")*/

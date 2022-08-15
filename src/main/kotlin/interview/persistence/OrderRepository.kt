@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.some
+import com.zaxxer.hikari.HikariDataSource
 import interview.PersistenceError
 import interview.models.Order
 import interview.models.OrderPosition
@@ -11,11 +12,10 @@ import interview.models.OrderStatus
 import java.sql.ResultSet
 import org.slf4j.LoggerFactory
 
-class OrderRepository {
-
+open class OrderRepository(
+    private val dataSource: HikariDataSource,
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    private val dataSource = PostgresDataSource.dataSource
 
     fun find(orderId: Int): Either<PersistenceError, Option<Order>> =
         Either.catch { read(orderId) }

@@ -1,6 +1,7 @@
 package interview
 
-import interview.Configuration.orderService
+import interview.configuration.Configuration
+import interview.configuration.Configuration.orderProcessor
 import interview.plugins.configureRouting
 import interview.plugins.configureSerialization
 import io.ktor.server.application.Application
@@ -18,8 +19,8 @@ fun Application.module() {
 
 fun Application.main() {
     val appConfig = environment.config.config("ktor.properties")
-    val orderProcessingInitialDelay = Duration.parse(appConfig.property("order-service.initial-delay").getString())
-    val orderProcessingFixedDelay = Duration.parse(appConfig.property("order-service.fixed-delay").getString())
+    val orderProcessingInitialDelay = Duration.parse(appConfig.property("order-processing.initial-delay").getString())
+    val orderProcessingFixedDelay = Duration.parse(appConfig.property("order-processing.fixed-delay").getString())
 
     Configuration.initialize(appConfig)
 
@@ -27,7 +28,7 @@ fun Application.main() {
 
     fun triggerPaidOrdersProcessing() {
         logger.debug("Starting processing of PAID orders")
-        val processingResult = orderService.processPaidOrders()
+        val processingResult = orderProcessor.processPaidOrders()
         processingResult.tapLeft {
             logger.warn("Following errors occurred during processing PAID orders\n ${it.joinToString("\n")}")
         }

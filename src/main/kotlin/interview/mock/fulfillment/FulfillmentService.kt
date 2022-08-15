@@ -1,12 +1,15 @@
 package interview.mock.fulfillment
 
-import kotlin.random.Random
+import org.slf4j.LoggerFactory
 
-class FulfillmentService {
-    fun isSuccessfulFulfillment(): Boolean {
-        val randomValue = Random.nextInt(0, 10)
-        println("WARN ######################### Random value $randomValue")
-        return true
-//    return randomValue > 5
+class FulfillmentService(
+    private val randomProvider: RandomProvider,
+) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    fun isFulfillmentRequestAccepted(): Boolean {
+        val randomValue = randomProvider.nextBoolean()
+        logger.debug("Order fulfillment started ${if (randomValue) "successfully" else "unsuccessfully"}")
+        return randomValue
     }
 }

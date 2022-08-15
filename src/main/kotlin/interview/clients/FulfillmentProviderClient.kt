@@ -14,7 +14,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
-class FulfillmentProviderClient(
+open class FulfillmentProviderClient(
     private val httpTimeout: Long,
     private val httpMaxRetries: Int,
     private val fulfillmentProviderBaseUrl: String,

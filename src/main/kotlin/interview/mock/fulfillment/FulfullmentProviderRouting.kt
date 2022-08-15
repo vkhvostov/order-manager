@@ -1,6 +1,6 @@
 package interview.mock.fulfillment
 
-import interview.Configuration.fulfillmentService
+import interview.configuration.Configuration.fulfillmentService
 import interview.models.FulfillmentRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -15,7 +15,7 @@ fun Route.fulfillmentProviderRouting() {
         post {
             call.receive<FulfillmentRequest>()
 
-            if (fulfillmentService.isSuccessfulFulfillment()) {
+            if (fulfillmentService.isFulfillmentRequestAccepted()) {
                 call.respond(HttpStatusCode.Accepted)
             } else {
                 call.respond(HttpStatusCode.NotAcceptable)
