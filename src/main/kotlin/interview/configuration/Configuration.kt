@@ -13,16 +13,25 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
 
-object Configuration {
+interface Configuration {
+
+    val orderRepository: OrderRepository
+    val orderService: OrderService
+    val orderProcessor: OrderProcessor
+    val fulfillmentService: FulfillmentService
+    fun initialize(appConfig: ApplicationConfig)
+}
+
+object ProductionConfiguration : Configuration {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    lateinit var orderRepository: OrderRepository
-    lateinit var orderService: OrderService
-    lateinit var orderProcessor: OrderProcessor
-    lateinit var fulfillmentService: FulfillmentService
+    override lateinit var orderRepository: OrderRepository
+    override lateinit var orderService: OrderService
+    override lateinit var orderProcessor: OrderProcessor
+    override lateinit var fulfillmentService: FulfillmentService
 
     // TODO: what to do at initialization exception?
-    fun initialize(appConfig: ApplicationConfig) {
+    override fun initialize(appConfig: ApplicationConfig) {
         fun property(propertyPath: String): String = appConfig.property(propertyPath).getString()
 
         logger.info("Starting initialization")

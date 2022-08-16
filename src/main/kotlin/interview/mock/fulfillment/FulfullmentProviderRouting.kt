@@ -1,6 +1,6 @@
 package interview.mock.fulfillment
 
-import interview.configuration.Configuration.fulfillmentService
+import interview.configuration.ProductionConfiguration.fulfillmentService
 import interview.models.FulfillmentRequest
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call

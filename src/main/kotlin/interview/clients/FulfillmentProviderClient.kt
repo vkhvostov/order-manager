@@ -3,6 +3,7 @@ package interview.clients
 import arrow.core.Either
 import interview.FulfillmentError
 import interview.OrderManagementError
+import interview.models.FulfillmentRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpRequestRetry
@@ -13,6 +14,8 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 open class FulfillmentProviderClient(
     private val httpTimeout: Long,
@@ -48,7 +51,7 @@ open class FulfillmentProviderClient(
     private suspend fun sendRequest(orderId: Int): Boolean {
         val response = client.post("$fulfillmentProviderBaseUrl$fulfillmentRequestUrl") {
             contentType(ContentType.Application.Json)
-            setBody("{ \"orderId\": $orderId }") // TODO: serialize the object
+            setBody(Json.encodeToString(FulfillmentRequest(orderId)))
         }
 
         return when (response.status) {

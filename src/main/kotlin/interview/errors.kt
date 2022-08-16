@@ -28,12 +28,12 @@ suspend inline fun <reified A : Any> Either<OrderManagementError, A>.respond(sta
 suspend fun PipelineContext<Unit, ApplicationCall>.respond(error: OrderManagementError): Unit =
     when (error) {
         is PersistenceError -> internal(error)
-        is ValidationError -> unprocessable(error)
+        is ValidationError -> badRequest(error)
         is FulfillmentError -> failedDependency(error)
     }
 
-private suspend inline fun PipelineContext<Unit, ApplicationCall>.unprocessable(error: OrderManagementError): Unit =
-    call.respond(HttpStatusCode.UnprocessableEntity, error.description)
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.badRequest(error: OrderManagementError): Unit =
+    call.respond(HttpStatusCode.BadRequest, error.description)
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.internal(error: OrderManagementError): Unit =
     call.respond(HttpStatusCode.InternalServerError, error.description)

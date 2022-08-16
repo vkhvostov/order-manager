@@ -3,7 +3,7 @@ package interview.persistence
 import arrow.core.getOrElse
 import com.zaxxer.hikari.HikariDataSource
 import interview.PersistenceError
-import interview.configuration.Configuration
+import interview.configuration.ProductionConfiguration
 import interview.models.Order
 import interview.models.OrderPosition
 import interview.models.OrderStatus
@@ -35,8 +35,8 @@ class OrderRepositoryTest {
     fun setUp()  = testApplication {
         environment {
             config = ApplicationConfig("application.conf")
-            Configuration.initialize(config.config("ktor.properties"))
-            orderRepository = Configuration.orderRepository
+            ProductionConfiguration.initialize(config.config("ktor.properties"))
+            orderRepository = ProductionConfiguration.orderRepository
             orderRepository.removeAll()
         }
     }

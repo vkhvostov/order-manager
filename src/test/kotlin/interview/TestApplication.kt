@@ -1,9 +1,8 @@
 package interview
 
+import interview.TestConfiguration.orderProcessor
+import interview.TestConfiguration.orderService
 import interview.configuration.Configuration
-import interview.configuration.ProductionConfiguration
-import interview.configuration.ProductionConfiguration.orderProcessor
-import interview.configuration.ProductionConfiguration.orderService
 import interview.plugins.configureRouting
 import interview.plugins.configureSerialization
 import io.ktor.server.application.Application
@@ -18,7 +17,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.main() {
     val appConfig = environment.config.config("ktor.properties")
 
-    initialization(appConfig, ProductionConfiguration)
+    initialization(appConfig, TestConfiguration)
     module()
     scheduleJobs(appConfig)
 }
