@@ -97,14 +97,13 @@ tasks.jacocoTestCoverageVerification {
 }
 
 application {
-    mainClass.set("ApplicationKt")
+    mainClass.set("interview.ApplicationKt")
 }
 
-// TODO: get values from the environment variables
 flyway {
-    url = "jdbc:postgresql://localhost:5432/order_manager_db" /*System.getenv("DB_URL")*/
-    user = "postgres" /*System.getenv("DB_USER")*/
-    password = "postgres" /*System.getenv("DB_PASSWORD")*/
+    url = System.getenv("DB_URL")
+    user = System.getenv("DB_USER")
+    password = System.getenv("DB_PASSWORD")
     baselineOnMigrate = true
     locations = arrayOf("filesystem:src/main/resources/db/migration")
 }

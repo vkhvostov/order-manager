@@ -21,7 +21,6 @@ class OrderProcessor(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    // TODO: check if this can be simplified
     /**
      * This function processes PAID orders
      * 1. Finds all PAID orders in the database
