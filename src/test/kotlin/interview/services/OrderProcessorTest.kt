@@ -33,24 +33,26 @@ class OrderProcessorTest {
         OrderPosition(positionId = 1, articleId = "article-1", amount = 1),
         OrderPosition(positionId = 2, articleId = "article-2", amount = 2)
     )
-    private val firstOrder = Order(id = 123, positions = positions, status = OrderStatus.PAID)
-    private val secondOrder = firstOrder.copy(id = 456, positions = positions.map { it.copy(it.positionId!! + 2) })
+    private val firstOrderId = 123
+    private val secondOrderId = 456
+    private val firstOrder = Order(id = firstOrderId, positions = positions, status = OrderStatus.PAID)
+    private val secondOrder = firstOrder.copy(id = secondOrderId, positions = positions.map { it.copy(it.positionId!! + 2) })
 
     @Test
     fun `SHOULD successfully process all PAID orders`() {
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder).right()
         every { orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) } returns Unit.right()
         every { orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT) } returns Unit.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns true.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId) } returns true.right()
 
         orderProcessor.processPaidOrders().shouldBeRight()
 
         coVerify {
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT)
             orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT)
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
-            fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
+            fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId)
         }
     }
 
@@ -70,13 +72,13 @@ class OrderProcessorTest {
     fun `SHOULD successfully process only PAID orders with non-null ID`() {
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder.copy(id = null)).right()
         every { orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) } returns Unit.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns true.right()
 
         orderProcessor.processPaidOrders().shouldBeRight()
 
         coVerify(exactly = 1) {
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT)
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
         }
     }
 
@@ -85,15 +87,15 @@ class OrderProcessorTest {
         val error = FulfillmentError("Error during sending order with ID ${firstOrder.id} for fulfillment", RuntimeException("Test exception"))
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder).right()
         every { orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT) } returns Unit.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns error.left()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns error.left()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId) } returns true.right()
 
         orderProcessor.processPaidOrders().shouldBeLeft(listOf(error))
 
         coVerify {
             orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT)
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
-            fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
+            fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId)
 
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) wasNot Called
         }
@@ -104,14 +106,14 @@ class OrderProcessorTest {
         val firstError = FulfillmentError("Error during sending order with ID ${firstOrder.id} for fulfillment", RuntimeException("Test exception"))
         val secondError = FulfillmentError("Error during sending order with ID ${secondOrder.id} for fulfillment", RuntimeException("Test exception"))
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder).right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns firstError.left()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!) } returns secondError.left()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns firstError.left()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId) } returns secondError.left()
 
         orderProcessor.processPaidOrders().shouldBeLeft(listOf(firstError, secondError))
 
         coVerify {
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
-            fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
+            fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId)
 
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) wasNot Called
             orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT) wasNot Called
@@ -124,16 +126,16 @@ class OrderProcessorTest {
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder).right()
         every { orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) } returns Unit.right()
         every { orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT) } returns error.left()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns true.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId) } returns true.right()
 
         orderProcessor.processPaidOrders().shouldBeLeft(listOf(error))
 
         coVerify {
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT)
             orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT)
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
-            fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
+            fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId)
         }
     }
 
@@ -143,16 +145,16 @@ class OrderProcessorTest {
         every { orderService.findAll(OrderStatus.PAID) } returns listOf(firstOrder, secondOrder).right()
         every { orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT) } returns error.left()
         every { orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT) } returns error.left()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!) } returns true.right()
-        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId) } returns true.right()
+        coEvery { fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId) } returns true.right()
 
         orderProcessor.processPaidOrders().shouldBeLeft(listOf(error, error))
 
         coVerify {
             orderService.updateOrderStatus(firstOrder.id, OrderStatus.IN_FULFILLMENT)
             orderService.updateOrderStatus(secondOrder.id, OrderStatus.IN_FULFILLMENT)
-            fulfillmentProviderClient.sendFulfillmentRequest(firstOrder.id!!)
-            fulfillmentProviderClient.sendFulfillmentRequest(secondOrder.id!!)
+            fulfillmentProviderClient.sendFulfillmentRequest(firstOrderId)
+            fulfillmentProviderClient.sendFulfillmentRequest(secondOrderId)
         }
     }
 }

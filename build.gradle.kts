@@ -16,6 +16,7 @@ version = "1.0-SNAPSHOT"
 
 val ktorVersion: String by project
 val arrowVersion: String by project
+val kotlinVersion: String by project
 
 repositories {
     mavenCentral()
@@ -41,6 +42,8 @@ dependencies {
     testImplementation("org.skyscreamer:jsonassert:1.5.1")
     testImplementation("io.kotest:kotest-assertions-core:5.4.1")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:1.2.5")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
 }
 
 tasks.withType<KotlinCompile> {
@@ -87,6 +90,7 @@ tasks.jacocoTestCoverageVerification {
                 "interview.configuration.*",
                 "interview.plugins.*",
                 "interview.plugins.*",
+                "interview.plugins.models.*serializer",
             )
         }
     }

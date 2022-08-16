@@ -32,12 +32,13 @@ class OrderServiceTest {
         OrderPosition(positionId = 1, articleId = "article-1", amount = 1),
         OrderPosition(positionId = 2, articleId = "article-2", amount = 2)
     )
-    private val order = Order(id = 123, positions = positions, status = CREATED)
+    private val orderId = 123
+    private val order = Order(id = orderId, positions = positions, status = CREATED)
     private val orderCreationRequest = OrderCreationRequest(positions)
 
     @Test
     fun `SHOULD find some order by order ID`() {
-        every { orderRepository.find(order.id!!) } returns order.some().right()
+        every { orderRepository.find(orderId) } returns order.some().right()
 
         val actual = orderService.find(order.id.toString())
 
@@ -46,7 +47,7 @@ class OrderServiceTest {
 
     @Test
     fun `SHOULD find none order by order ID WHEN repository returns none`() {
-        every { orderRepository.find(order.id!!) } returns None.right()
+        every { orderRepository.find(orderId) } returns None.right()
 
         val actual = orderService.find(order.id.toString())
 
@@ -56,7 +57,7 @@ class OrderServiceTest {
     @Test
     fun `SHOULD return database error WHEN searching for an order and repository throws an error`() {
         val error = PersistenceError("Test error", SQLException("Test SQL exception"))
-        every { orderRepository.find(order.id!!) } returns error.left()
+        every { orderRepository.find(orderId) } returns error.left()
 
         val actual = orderService.find(order.id.toString())
 
@@ -113,7 +114,7 @@ class OrderServiceTest {
 
     @Test
     fun `SHOULD successfully create an order`() {
-        every { orderRepository.save(order.copy(id = null, status = CREATED)) } returns order.id!!.right()
+        every { orderRepository.save(order.copy(id = null, status = CREATED)) } returns orderId.right()
 
         val actual = orderService.create(orderCreationRequest)
 
@@ -132,7 +133,7 @@ class OrderServiceTest {
 
     @Test
     fun `SHOULD successfully update order status`() {
-        every { orderRepository.updateStatus(order.id!!, PAID) } returns Unit.right()
+        every { orderRepository.updateStatus(orderId, PAID) } returns Unit.right()
 
         val actual = orderService.updateOrderStatus(order.id, PAID)
 

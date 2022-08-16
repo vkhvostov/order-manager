@@ -16,6 +16,7 @@ import kotlin.time.Duration
 object Configuration {
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    lateinit var orderRepository: OrderRepository
     lateinit var orderService: OrderService
     lateinit var orderProcessor: OrderProcessor
     lateinit var fulfillmentService: FulfillmentService
@@ -39,7 +40,7 @@ object Configuration {
         val orderProcessingThreadPoolSize = property("order-processing.thread-pool-size").toInt()
         val orderProcessingCoroutineDispatcher = Executors.newFixedThreadPool(orderProcessingThreadPoolSize).asCoroutineDispatcher()
 
-        val orderRepository = OrderRepository(dataSource)
+        orderRepository = OrderRepository(dataSource)
         val fulfillmentProviderClient = FulfillmentProviderClient(httpTimeout, httpRetries, fulfillmentProviderBaseUrl)
         orderService = OrderService(orderRepository)
 

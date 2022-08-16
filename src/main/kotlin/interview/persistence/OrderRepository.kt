@@ -33,6 +33,9 @@ open class OrderRepository(
         Either.catch { update(orderId, status) }
             .mapLeft { PersistenceError("Error during updating order $orderId with status $status", it) }
 
+    fun removeAll(): Either<PersistenceError, Unit> =
+        Either.catch { deleteAll() }.mapLeft { PersistenceError("Error during deleting orders", it) }
+
     private fun read(orderId: Int): Option<Order> {
         logger.debug("Searching for an order with ID $orderId")
         val connection = dataSource.connection
@@ -104,6 +107,15 @@ open class OrderRepository(
         val connection = dataSource.connection
 
         val query = connection.prepareStatement("UPDATE orders SET status = '$status' where id = $orderId;")
+
+        query.executeUpdate()
+    }
+
+    private fun deleteAll(): Unit {
+        logger.debug("Deleting all orders")
+        val connection = dataSource.connection
+
+        val query = connection.prepareStatement("DELETE from orders;")
 
         query.executeUpdate()
     }
