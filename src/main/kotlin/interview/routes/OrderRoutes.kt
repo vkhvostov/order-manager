@@ -1,7 +1,10 @@
 package interview.routes
 
+import arrow.core.Either
 import arrow.core.None
 import arrow.core.Some
+import arrow.core.flatMap
+import interview.ValidationError
 import interview.models.OrderPosition
 import interview.respond
 import interview.services.OrderService
@@ -34,9 +37,9 @@ fun Route.orderRouting(orderService: OrderService) {
             }.respond(OK)
         }
         put {
-            val order = call.receive<OrderCreationRequest>()
-            val orderId = orderService.create(order)
-            orderId.respond(Created)
+            val creationRequest = Either.catch { call.receive<OrderCreationRequest>() }
+                .mapLeft { ValidationError("Invalid input: ${it.cause}") }
+            creationRequest.flatMap { orderService.create(it) }.respond(Created)
         }
     }
 }

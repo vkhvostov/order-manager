@@ -120,4 +120,17 @@ class OrderRoutesKtTest {
         val response = client.get("/order/$orderId")
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
+
+    @Test
+    fun `SHOULD return bad request WHEN input is invalid`() = testApplication {
+        application {
+            main()
+        }
+
+        val response = client.put("/order") {
+            contentType(ContentType.Application.Json)
+            setBody("invalid input")
+        }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
 }
