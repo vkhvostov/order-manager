@@ -10,7 +10,7 @@ import io.ktor.server.routing.routing
 
 fun Application.configureRouting(orderService: OrderService) {
     routing {
-        orderRouting()
+        orderRouting(orderService)
         paymentConfirmationRouting(orderService)
         fulfillmentConfirmationRouting(orderService)
 
