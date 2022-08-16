@@ -54,7 +54,7 @@ open class OrderRepository(
         return if (orders.isEmpty()) None else orders.first().some()
     }
 
-    private fun readAll(status: OrderStatus? = null): List<Order> {
+    private fun readAll(status: OrderStatus?): List<Order> {
         logger.debug("Searching for all orders")
         val connection = dataSource.connection
 
