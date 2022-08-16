@@ -23,6 +23,7 @@ class FulfillmentRequestTest {
         val actual = Json.decodeFromString<FulfillmentRequest>(json)
 
         assertEquals(expected, actual)
+        assertEquals(expected.orderId, actual.orderId)
     }
 
     @Test

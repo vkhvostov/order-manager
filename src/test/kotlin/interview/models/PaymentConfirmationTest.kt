@@ -23,6 +23,7 @@ class PaymentConfirmationTest {
         val actual = Json.decodeFromString<PaymentConfirmation>(json)
 
         Assertions.assertEquals(expected, actual)
+        Assertions.assertEquals(expected.orderId, actual.orderId)
     }
 
     @Test

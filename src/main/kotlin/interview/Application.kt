@@ -27,11 +27,12 @@ fun Application.main() {
     val logger = LoggerFactory.getLogger(javaClass)
 
     fun triggerPaidOrdersProcessing() {
-        logger.debug("Starting processing of PAID orders")
+        logger.info("Starting processing of PAID orders")
         val processingResult = orderProcessor.processPaidOrders()
         processingResult.tapLeft {
             logger.warn("Following errors occurred during processing PAID orders\n ${it.joinToString("\n")}")
         }
+        logger.info("Processing of PAID order is finished")
     }
 
     launch {

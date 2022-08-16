@@ -84,7 +84,9 @@ tasks.jacocoTestCoverageVerification {
                 minimum = "1.0".toBigDecimal()
             }
             excludes = listOf(
-                "interview.*",
+                "interview.configuration.*",
+                "interview.plugins.*",
+                "interview.plugins.*",
             )
         }
     }

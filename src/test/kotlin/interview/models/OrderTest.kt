@@ -39,6 +39,7 @@ class OrderTest {
         val actual = Json.decodeFromString<Order>(json)
 
         Assertions.assertEquals(order, actual)
+        Assertions.assertEquals(order.positions, actual.positions)
     }
 
     @Test
@@ -69,6 +70,7 @@ class OrderTest {
         val actual = Json.decodeFromString<Order>(json)
 
         Assertions.assertEquals(order, actual)
+        Assertions.assertEquals(order.positions, actual.positions)
     }
 
     @Test
