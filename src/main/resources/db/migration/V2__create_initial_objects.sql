@@ -1,5 +1,3 @@
--- create schema order_manager;
-
 create table orders
 (
     id     serial PRIMARY KEY,
