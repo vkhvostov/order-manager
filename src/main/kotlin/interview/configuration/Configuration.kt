@@ -30,33 +30,39 @@ object ProductionConfiguration : Configuration {
     override lateinit var orderProcessor: OrderProcessor
     override lateinit var fulfillmentService: FulfillmentService
 
-    // TODO: what to do at initialization exception?
     override fun initialize(appConfig: ApplicationConfig) {
         fun property(propertyPath: String): String = appConfig.property(propertyPath).getString()
 
         logger.info("Starting initialization")
 
-        val dataSource = createDataSource(
-            property("database.jdbc-url"),
-            property("database.driver-class-name"),
-            property("database.username"),
-            property("database.password"),
-        )
+        try {
+            val dataSource = createDataSource(
+                property("database.jdbc-url"),
+                property("database.driver-class-name"),
+                property("database.username"),
+                property("database.password"),
+            )
 
-        val httpTimeout: Long = Duration.parse(property("http-request.timeout")).inWholeMilliseconds
-        val httpRetries = property("http-request.retries").toInt()
-        val fulfillmentProviderBaseUrl = property("fulfillment-provider.base-url")
-        val orderProcessingThreadPoolSize = property("order-processing.thread-pool-size").toInt()
-        val orderProcessingCoroutineDispatcher = Executors.newFixedThreadPool(orderProcessingThreadPoolSize).asCoroutineDispatcher()
+            val httpTimeout: Long = Duration.parse(property("http-request.timeout")).inWholeMilliseconds
+            val httpRetries = property("http-request.retries").toInt()
+            val httpThreadCount = property("http-request.thread-count").toInt()
+            val fulfillmentProviderBaseUrl = property("fulfillment-provider.base-url")
+            val orderProcessingThreadPoolSize = property("order-processing.thread-pool-size").toInt()
+            val orderProcessingCoroutineDispatcher =
+                Executors.newFixedThreadPool(orderProcessingThreadPoolSize).asCoroutineDispatcher()
 
-        orderRepository = OrderRepository(dataSource)
-        val fulfillmentProviderClient = FulfillmentProviderClient(httpTimeout, httpRetries, fulfillmentProviderBaseUrl)
-        orderService = OrderService(orderRepository)
+            orderRepository = OrderRepository(dataSource)
+            val fulfillmentProviderClient =
+                FulfillmentProviderClient(httpTimeout, httpRetries, fulfillmentProviderBaseUrl, httpThreadCount)
+            orderService = OrderService(orderRepository)
 
-        orderProcessor = OrderProcessor(fulfillmentProviderClient, orderService, orderProcessingCoroutineDispatcher)
+            orderProcessor = OrderProcessor(fulfillmentProviderClient, orderService, orderProcessingCoroutineDispatcher)
 
-        val randomProvider = RandomProvider()
-        fulfillmentService = FulfillmentService(randomProvider)
+            val randomProvider = RandomProvider()
+            fulfillmentService = FulfillmentService(randomProvider)
+        } catch (e: Exception) {
+            logger.error("Initialization has failed", e)
+        }
 
         logger.info("Initialization is finished")
     }

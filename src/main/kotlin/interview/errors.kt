@@ -6,6 +6,9 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.util.pipeline.PipelineContext
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("errors")
 
 sealed interface OrderManagementError {
     val description: String
@@ -27,9 +30,9 @@ suspend inline fun <reified A : Any> Either<OrderManagementError, A>.respond(sta
 
 suspend fun PipelineContext<Unit, ApplicationCall>.respond(error: OrderManagementError): Unit =
     when (error) {
-        is PersistenceError -> internal(error)
-        is ValidationError -> badRequest(error)
-        is FulfillmentError -> failedDependency(error)
+        is PersistenceError -> internal(error).also { logger.error(error.description, error.error) }
+        is ValidationError -> badRequest(error).also { logger.error(error.description) }
+        is FulfillmentError -> failedDependency(error).also { logger.error(error.description, error.error) }
     }
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.badRequest(error: OrderManagementError): Unit =

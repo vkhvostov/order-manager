@@ -21,6 +21,7 @@ open class FulfillmentProviderClient(
     private val httpTimeout: Long,
     private val httpMaxRetries: Int,
     private val fulfillmentProviderBaseUrl: String,
+    private val httpThreadCount: Int,
 ) {
 
     private val fulfillmentRequestUrl = "/fulfillment-request"
@@ -36,6 +37,9 @@ open class FulfillmentProviderClient(
         install(HttpRequestRetry) {
             exponentialDelay()
             maxRetries = httpMaxRetries
+        }
+        engine {
+            threadsCount = httpThreadCount
         }
     }
 
