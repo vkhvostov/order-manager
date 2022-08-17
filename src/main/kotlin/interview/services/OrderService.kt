@@ -28,8 +28,12 @@ class OrderService(
     }
 
     fun create(orderCreationRequest: OrderCreationRequest): Either<OrderManagementError, Int> {
-        val order = Order(positions = orderCreationRequest.positions, status = OrderStatus.CREATED)
-        return orderRepository.save(order)
+        return if (isValidCreationRequest(orderCreationRequest)) {
+            val order = Order(positions = orderCreationRequest.positions, status = OrderStatus.CREATED)
+            orderRepository.save(order)
+        } else {
+            ValidationError("The order creation request is not valid").left()
+        }
     }
 
     fun updateOrderStatus(orderId: Int?, orderStatus: OrderStatus): Either<OrderManagementError, Unit> {
@@ -41,4 +45,6 @@ class OrderService(
             ValidationError("Order ID is null").left()
         }
     }
+
+    private fun isValidCreationRequest(orderCreationRequest: OrderCreationRequest): Boolean = orderCreationRequest.positions.size < 100
 }

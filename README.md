@@ -53,10 +53,11 @@ The order management system is implemented using
 
 * Credential management to restrict access to endpoints and the database
 * Safety mechanisms against attacks like SQL injection prevention
+* More real order fields to be closer to reality (e.g. customer details)
+* More complex order validation
 * Database related changes like
   * Separate database schema for the application
   * Usage of an ORM framework for more convenient work with the database
-  * More real order fields to be closer to reality (e.g. customer details)
   * Good database structure, like indices, foreign keys or normalization
 * Deployment configuration to cloud (e.g. k8s)
 * Resilience instruments for dependencies like circuit breaker, etc

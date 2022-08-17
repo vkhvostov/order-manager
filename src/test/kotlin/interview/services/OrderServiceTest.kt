@@ -147,4 +147,15 @@ class OrderServiceTest {
 
         actual.shouldBeLeft(error)
     }
+
+    @Test
+    fun `SHOULD return validation error WHEN creation request is not valid`() {
+        val error = ValidationError("The order creation request is not valid")
+
+        val manyPositions = mutableListOf<OrderPosition>()
+        repeat(200) { manyPositions.addAll(positions) }
+        val actual = orderService.create(orderCreationRequest.copy(positions = manyPositions))
+
+        actual.shouldBeLeft(error)
+    }
 }
