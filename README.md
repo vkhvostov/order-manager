@@ -43,13 +43,13 @@ It means that application is up and running.
 
 The order management system is implemented using
 
-1. Kotlin - as main programming language
-2. Gradle - as the build tool
-3. Ktor - as HTTP routing framework
-4. Arrow-kt - for error handling following functional programming approach
-5. Postgres DB - to store the state of the system
-6. Ktlint - to maintain the common code style
-7. Jacoco - as coverage engine
+1. [Kotlin](https://kotlinlang.org/) - as main programming language
+2. [Gradle](https://gradle.org/) - as the build tool
+3. [Ktor](https://ktor.io/) - as HTTP routing framework
+4. [Arrow-kt](https://arrow-kt.io/) - for error handling following functional programming approach
+5. [Postgres DB](https://www.postgresql.org/) - to store the state of the system
+6. [Ktlint](https://ktlint.github.io/) - to maintain the common code style
+7. [Jacoco](https://www.eclemma.org/jacoco/) - as coverage engine
 
 ## What was not implemented and what can be improved
 
@@ -69,3 +69,4 @@ The order management system is implemented using
   * System testing
 * Proper management of the object lifecycle
 * Monitoring, for example prometheus metrics, open tracing, etc
+* Use [Kover](https://github.com/Kotlin/kotlinx-kover) instead of jacoco to support kotlin coverage better
