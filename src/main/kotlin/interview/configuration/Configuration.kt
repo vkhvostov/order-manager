@@ -48,13 +48,14 @@ object ProductionConfiguration : Configuration {
             val httpThreadCount = property("http-request.thread-count").toInt()
             val fulfillmentProviderBaseUrl = property("fulfillment-provider.base-url")
             val orderProcessingThreadPoolSize = property("order-processing.thread-pool-size").toInt()
+            val orderProcessingMaxOrderSize = property("order-processing.max-order-size").toInt()
             val orderProcessingCoroutineDispatcher =
                 Executors.newFixedThreadPool(orderProcessingThreadPoolSize).asCoroutineDispatcher()
 
             orderRepository = OrderRepository(dataSource)
             val fulfillmentProviderClient =
                 FulfillmentProviderClient(httpTimeout, httpRetries, fulfillmentProviderBaseUrl, httpThreadCount)
-            orderService = OrderService(orderRepository)
+            orderService = OrderService(orderRepository, orderProcessingMaxOrderSize)
 
             orderProcessor = OrderProcessor(fulfillmentProviderClient, orderService, orderProcessingCoroutineDispatcher)
 

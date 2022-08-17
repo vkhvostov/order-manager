@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 
 class OrderService(
     private val orderRepository: OrderRepository,
+    private val maxOrderSize: Int,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -46,5 +47,5 @@ class OrderService(
         }
     }
 
-    private fun isValidCreationRequest(orderCreationRequest: OrderCreationRequest): Boolean = orderCreationRequest.positions.size < 100
+    private fun isValidCreationRequest(orderCreationRequest: OrderCreationRequest): Boolean = orderCreationRequest.positions.sumOf { it.amount } < maxOrderSize
 }
