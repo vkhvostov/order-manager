@@ -23,14 +23,14 @@ class OrderTest {
               "id": ${order.id},
               "positions": [
                 ${positions.joinToString {
-                    """
+            """
                         {
                           "positionId": ${it.positionId},
                           "articleId": "${it.articleId}",
                           "amount": ${it.amount}
                         }
-                    """.trimIndent()
-                }}
+            """.trimIndent()
+        }}
               ],
               "status": "${order.status}"
             }
@@ -60,7 +60,7 @@ class OrderTest {
                           "articleId": "${it.articleId}",
                           "amount": ${it.amount}
                         }
-                    """.trimIndent()
+            """.trimIndent()
         }}
               ],
               "status": "${order.status}"
@@ -92,7 +92,7 @@ class OrderTest {
                           "articleId": "${it.articleId}",
                           "amount": ${it.amount}
                         }
-                    """.trimIndent()
+            """.trimIndent()
         }}
               ],
               "status": "${order.status}"
@@ -122,7 +122,7 @@ class OrderTest {
                           "articleId": "${it.articleId}",
                           "amount": ${it.amount}
                         }
-                    """.trimIndent()
+            """.trimIndent()
         }}
               ],
               "status": "${order.status}"

@@ -20,11 +20,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
 import io.mockk.every
-import java.sql.SQLException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
+import java.sql.SQLException
 import kotlin.test.assertEquals
 
 class OrderRoutesKtTest {

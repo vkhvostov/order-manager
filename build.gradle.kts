@@ -3,12 +3,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     idea
     jacoco
-    kotlin("jvm") version "1.7.10"
     application
-
-    id("org.flywaydb.flyway") version "9.1.3"
-
+    kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization").version("1.7.10")
+    id("org.flywaydb.flyway") version "9.1.3"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }
 
 group = "interview"
@@ -35,7 +34,7 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.4.1")
     implementation("org.flywaydb:flyway-core:9.1.3")
-    implementation ("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.12.5")
@@ -93,6 +92,15 @@ tasks.jacocoTestCoverageVerification {
                 "interview.plugins.models.*serializer",
             )
         }
+    }
+}
+
+ktlint {
+    verbose.set(true)
+    outputToConsole.set(true)
+    coloredOutput.set(true)
+    filter {
+        exclude("**/errors.kt")
     }
 }
 

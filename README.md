@@ -48,6 +48,8 @@ The order management system is implemented using
 3. Ktor - as HTTP routing framework
 4. Arrow-kt - for error handling following functional programming approach
 5. Postgres DB - to store the state of the system
+6. Ktlint - to maintain the common code style
+7. Jacoco - as coverage engine
 
 ## What was not implemented and what can be improved
 

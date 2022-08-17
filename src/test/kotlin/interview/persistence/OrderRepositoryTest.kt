@@ -15,9 +15,9 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.testing.testApplication
 import io.mockk.every
 import io.mockk.mockk
-import java.sql.SQLException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.sql.SQLException
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -32,7 +32,7 @@ class OrderRepositoryTest {
     private val order = Order(positions = positions, status = OrderStatus.CREATED)
 
     @BeforeEach
-    fun setUp()  = testApplication {
+    fun setUp() = testApplication {
         environment {
             config = ApplicationConfig("application.conf")
             ProductionConfiguration.initialize(config.config("ktor.properties"))
@@ -169,5 +169,4 @@ class OrderRepositoryTest {
 
         orderRepository.removeAll().shouldBeLeft(error)
     }
-
 }

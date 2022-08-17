@@ -8,9 +8,9 @@ import interview.persistence.OrderRepository
 import interview.services.OrderProcessor
 import interview.services.OrderService
 import io.ktor.server.config.ApplicationConfig
-import java.util.concurrent.Executors
 import kotlinx.coroutines.asCoroutineDispatcher
 import org.slf4j.LoggerFactory
+import java.util.concurrent.Executors
 import kotlin.time.Duration
 
 interface Configuration {

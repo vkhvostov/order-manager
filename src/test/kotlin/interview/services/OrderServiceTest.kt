@@ -19,8 +19,8 @@ import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.arrow.core.shouldBeSome
 import io.mockk.every
 import io.mockk.mockk
-import java.sql.SQLException
 import org.junit.jupiter.api.Test
+import java.sql.SQLException
 
 class OrderServiceTest {
 

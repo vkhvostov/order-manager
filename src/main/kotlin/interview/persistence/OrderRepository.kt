@@ -9,8 +9,8 @@ import interview.PersistenceError
 import interview.models.Order
 import interview.models.OrderPosition
 import interview.models.OrderStatus
-import java.sql.ResultSet
 import org.slf4j.LoggerFactory
+import java.sql.ResultSet
 
 open class OrderRepository(
     private val dataSource: HikariDataSource,
@@ -40,13 +40,15 @@ open class OrderRepository(
         logger.debug("Searching for an order with ID $orderId")
         val connection = dataSource.connection
 
-        val query = connection.prepareStatement("""
+        val query = connection.prepareStatement(
+            """
             SELECT o.id as order_id, o.status as status, p.id as position_id, p.article_id as article_id, p.amount as amount 
             FROM orders o 
                 JOIN order_to_position otp on o.id = otp.order_id
                 JOIN positions p on p.id = otp.position_id
             WHERE o.id = $orderId;
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         val result = query.executeQuery()
         val orders = toOrders(result)
@@ -60,13 +62,15 @@ open class OrderRepository(
 
         val statusWhereClause = if (status != null) "WHERE o.status = '$status'" else ""
 
-        val query = connection.prepareStatement("""
+        val query = connection.prepareStatement(
+            """
             SELECT o.id as order_id, o.status as status, p.id as position_id, p.article_id as article_id, p.amount as amount 
             FROM orders o 
                 JOIN order_to_position otp on o.id = otp.order_id
                 JOIN positions p on p.id = otp.position_id 
             $statusWhereClause;
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         val result = query.executeQuery()
 
@@ -102,7 +106,7 @@ open class OrderRepository(
         return orderId
     }
 
-    private fun update(orderId: Int, status: OrderStatus): Unit {
+    private fun update(orderId: Int, status: OrderStatus) {
         logger.debug("Updating for the order $orderId status to $status")
         val connection = dataSource.connection
 
@@ -111,7 +115,7 @@ open class OrderRepository(
         query.executeUpdate()
     }
 
-    private fun deleteAll(): Unit {
+    private fun deleteAll() {
         logger.debug("Deleting all orders")
         val connection = dataSource.connection
 
