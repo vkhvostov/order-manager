@@ -26,7 +26,7 @@ class OrderServiceTest {
 
     private val orderRepository: OrderRepository = mockk()
 
-    private val orderService = OrderService(orderRepository)
+    private val orderService = OrderService(orderRepository, 100)
 
     private val positions = listOf(
         OrderPosition(positionId = 1, articleId = "article-1", amount = 1),
